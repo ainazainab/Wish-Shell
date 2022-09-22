@@ -267,5 +267,5 @@ the knowledge you can always go back to an older, working version if need be.
 ## Tests
 
 Available are some tests to see if your code works. The testing framework that is
-currently available is found [here](https://gitlab.imt-atlantique.fr/ue-os/2022/processes-shell/tester).
+currently available is found [here](https://gitlab.imt-atlantique.fr/ue-os/2022/processes-shell/-/tree/main/tester).
 A specific testing script (`/test-wish.sh` ), found in the project root directory, can be used to run the tests against your code.
