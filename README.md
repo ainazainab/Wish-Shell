@@ -1,124 +1,271 @@
-<<<<<<< HEAD
-# simple-unix-shell
-=======
-# processes-shell
->>>>>>> 962fbb9 (Initial commit)
 
+# Unix Shell
 
+In this project, you'll build a simple Unix shell. The shell is the heart of
+the command-line interface, and thus is central to the Unix/C programming
+environment. Mastering use of the shell is necessary to become proficient in
+this world; knowing how the shell itself is built is the focus of this
+project.
 
-## Getting started
+There are three specific objectives to this assignment:
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+* To further familiarize yourself with the Linux programming environment.
+* To learn how processes are created, destroyed, and managed.
+* To gain exposure to the necessary functionality in shells.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+## Overview
 
-## Add your files
+In this assignment, you will implement a *command line interpreter (CLI)* or,
+as it is more commonly known, a *shell*. The shell should operate in this
+basic way: when you type in a command (in response to its prompt), the shell
+creates a child process that executes the command you entered and then prompts
+for more user input when it has finished.
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-<<<<<<< HEAD
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+The shells you implement will be similar to, but simpler than, the one you run
+every day in Unix. If you don't know what shell you are running, it's probably
+`bash`. One thing you should do on your own time is learn more about your
+shell, by reading the man pages or other online materials.
+
+## Program Specifications
+
+### Basic Shell: `wish`
+
+Your basic shell, called `wish` (short for Wisconsin Shell, naturally), is
+basically an interactive loop: it repeatedly prints a prompt `wish> ` (note
+the space after the greater-than sign), parses the input, executes the command
+specified on that line of input, and waits for the command to finish. This is
+repeated until the user types `exit`.  The name of your final executable
+should be `wish`.
+
+The shell can be invoked with either no arguments or a single argument;
+anything else is an error. Here is the no-argument way:
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.imt-atlantique.fr/a25zaina/simple-unix-shell.git
-=======
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://gitlab.imt-atlantique.fr/ue-os/2022/processes-shell.git
->>>>>>> 962fbb9 (Initial commit)
-git branch -M main
-git push -uf origin main
+prompt> ./wish
+wish>
 ```
 
-## Integrate with your tools
+At this point, `wish` is running, and ready to accept commands. Type away!
 
-<<<<<<< HEAD
-- [ ] [Set up project integrations](https://gitlab.imt-atlantique.fr/a25zaina/simple-unix-shell/-/settings/integrations)
-=======
-- [ ] [Set up project integrations](https://gitlab.imt-atlantique.fr/ue-os/2022/processes-shell/-/settings/integrations)
->>>>>>> 962fbb9 (Initial commit)
+The mode above is called *interactive* mode, and allows the user to type
+commands directly. The shell also supports a *batch mode*, which instead reads
+input from a batch file and executes commands from therein. Here is how you
+run the shell with a batch file named `batch.txt`:
 
-## Collaborate with your team
+```
+prompt> ./wish batch.txt
+```
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-<<<<<<< HEAD
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
-=======
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
->>>>>>> 962fbb9 (Initial commit)
+One difference between batch and interactive modes: in interactive mode, a
+prompt is printed (`wish> `). In batch mode, no prompt should be printed.
 
-## Test and Deploy
+You should structure your shell such that it creates a process for each new
+command (the exception are *built-in commands*, discussed below).  Your basic
+shell should be able to parse a command and run the program corresponding to
+the command.  For example, if the user types `ls -la /tmp`, your shell should
+run the program `/bin/ls` with the given arguments `-la` and `/tmp` (how does
+the shell know to run `/bin/ls`? It's something called the shell **path**;
+more on this below).
 
-Use the built-in continuous integration in GitLab.
+## Structure
 
-<<<<<<< HEAD
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-=======
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
->>>>>>> 962fbb9 (Initial commit)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+### Basic Shell
 
-***
+The shell is very simple (conceptually): it runs in a while loop, repeatedly
+asking for input to tell it what command to execute. It then executes that
+command. The loop continues indefinitely, until the user types the built-in
+command `exit`, at which point it exits. That's it!
 
-# Editing this README
+For reading lines of input, you should use `getline()`. This allows you to
+obtain arbitrarily long input lines with ease. Generally, the shell will be
+run in *interactive mode*, where the user types a command (one at a time) and
+the shell acts on it. However, your shell will also support *batch mode*, in
+which the shell is given an input file of commands; in this case, the shell
+should not read user input (from `stdin`) but rather from this file to get the
+commands to execute.
 
-<<<<<<< HEAD
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+In either mode, if you hit the end-of-file marker (EOF), you should call
+`exit(0)` and exit gracefully.
 
-## Suggestions for a good README
+To parse the input line into constituent pieces, you might want to use
+`strsep()`. Read the man page (carefully) for more details.
 
-=======
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
+To execute commands, look into `fork()`, `exec()`, and `wait()/waitpid()`.
+See the man pages for these functions, and also read the relevant [book
+chapter](http://www.ostep.org/cpu-api.pdf) for a brief overview.
 
-## Suggestions for a good README
->>>>>>> 962fbb9 (Initial commit)
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+You will note that there are a variety of commands in the `exec` family; for
+this project, you must use `execv`. You should **not** use the `system()`
+library function call to run a command.  Remember that if `execv()` is
+successful, it will not return; if it does return, there was an error (e.g.,
+the command does not exist). The most challenging part is getting the
+arguments correctly specified.
 
-## Name
-Choose a self-explaining name for your project.
+### Paths
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+In our example above, the user typed `ls` but the shell knew to execute the
+program `/bin/ls`. How does your shell know this?
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+It turns out that the user must specify a **path** variable to describe the
+set of directories to search for executables; the set of directories that
+comprise the path are sometimes called the *search path* of the shell. The
+path variable contains the list of all directories to search, in order, when
+the user types a command.
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+**Important:** Note that the shell itself does not *implement* `ls` or other
+commands (except built-ins). All it does is find those executables in one of
+the directories specified by `path` and create a new process to run them.
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+To check if a particular file exists in a directory and is executable,
+consider the `access()` system call. For example, when the user types `ls`,
+and path is set to include both `/bin` and `/usr/bin`, try `access("/bin/ls",
+X_OK)`. If that fails, try "/usr/bin/ls". If that fails too, it is an error.
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+Your initial shell path should contain one directory: `/bin`
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+Note: Most shells allow you to specify a binary specifically without using a
+search path, using either **absolute paths** or **relative paths**. For
+example, a user could type the **absolute path** `/bin/ls` and execute the
+`ls` binary without a search path being needed. A user could also specify a
+**relative path** which starts with the current working directory and
+specifies the executable directly, e.g., `./main`. In this project, you **do
+not** have to worry about these features.
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+### Built-in Commands
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+Whenever your shell accepts a command, it should check whether the command is
+a **built-in command** or not. If it is, it should not be executed like other
+programs. Instead, your shell will invoke your implementation of the built-in
+command. For example, to implement the `exit` built-in command, you simply
+call `exit(0);` in your wish source code, which then will exit the shell.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+In this project, you should implement `exit`, `cd`, and `path` as built-in
+commands.
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+* `exit`: When the user types `exit`, your shell should simply call the `exit`
+  system call with 0 as a parameter. It is an error to pass any arguments to
+  `exit`.
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+* `cd`: `cd` always take one argument (0 or >1 args should be signaled as an
+error). To change directories, use the `chdir()` system call with the argument
+supplied by the user; if `chdir` fails, that is also an error.
 
-## License
-For open source projects, say how it is licensed.
+* `path`: The `path` command takes 0 or more arguments, with each argument
+  separated by whitespace from the others. A typical usage would be like this:
+  `wish> path /bin /usr/bin`, which would add `/bin` and `/usr/bin` to the
+  search path of the shell. If the user sets path to be empty, then the shell
+  should not be able to run any programs (except built-in commands). The
+  `path` command always overwrites the old path with the newly specified
+  path.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+### Redirection
+
+Many times, a shell user prefers to send the output of a program to a file
+rather than to the screen. Usually, a shell provides this nice feature with
+the `>` character. Formally this is named as redirection of standard
+output. To make your shell users happy, your shell should also include this
+feature, but with a slight twist (explained below).
+
+For example, if a user types `ls -la /tmp > output`, nothing should be printed
+on the screen. Instead, the standard output of the `ls` program should be
+rerouted to the file `output`. In addition, the standard error output of
+the program should be rerouted to the file `output` (the twist is that this
+is a little different than standard redirection).
+
+If the `output` file exists before you run your program, you should simple
+overwrite it (after truncating it).  
+
+The exact format of redirection is a command (and possibly some arguments)
+followed by the redirection symbol followed by a filename. Multiple
+redirection operators or multiple files to the right of the redirection sign
+are errors.
+
+Note: don't worry about redirection for built-in commands (e.g., we will
+not test what happens when you type `path /bin > file`).
+
+### Parallel Commands
+
+Your shell will also allow the user to launch parallel commands. This is
+accomplished with the ampersand operator as follows:
+
+```
+wish> cmd1 & cmd2 args1 args2 & cmd3 args1
+```
+
+In this case, instead of running `cmd1` and then waiting for it to finish,
+your shell should run `cmd1`, `cmd2`, and `cmd3` (each with whatever arguments
+the user has passed to it) in parallel, *before* waiting for any of them to
+complete.
+
+Then, after starting all such processes, you must make sure to use `wait()`
+(or `waitpid`) to wait for them to complete. After all processes are done,
+return control to the user as usual (or, if in batch mode, move on to the next
+line).
+
+
+### Program Errors
+
+**The one and only error message.** You should print this one and only error
+message whenever you encounter an error of any type:
+
+```
+    char error_message[30] = "An error has occurred\n";
+    write(STDERR_FILENO, error_message, strlen(error_message));
+```
+
+The error message should be printed to stderr (standard error), as shown
+above.
+
+After most errors, your shell simply *continue processing* after
+printing the one and only error message. However, if the shell is
+invoked with more than one file, or if the shell is passed a bad batch
+file, it should exit by calling `exit(1)`.
+
+There is a difference between errors that your shell catches and those that
+the program catches. Your shell should catch all the syntax errors specified
+in this project page. If the syntax of the command looks perfect, you simply
+run the specified program. If there are any program-related errors (e.g.,
+invalid arguments to `ls` when you run it, for example), the shell does not
+have to worry about that (rather, the program will print its own error
+messages and exit).
+
+
+### Miscellaneous Hints
+
+Remember to get the **basic functionality** of your shell working before
+worrying about all of the error conditions and end cases. For example, first
+get a single command running (probably first a command with no arguments, such
+as `ls`).
+
+Next, add built-in commands. Then, try working on redirection. Finally, think
+about parallel commands. Each of these requires a little more effort on
+parsing, but each should not be too hard to implement.
+
+At some point, you should make sure your code is robust to white space of
+various kinds, including spaces (` `) and tabs (`\t`). In general, the user
+should be able to put variable amounts of white space before and after
+commands, arguments, and various operators; however, the operators
+(redirection and parallel commands) do not require whitespace.
+
+Check the return codes of all system calls from the very beginning of your
+work. This will often catch errors in how you are invoking these new system
+calls. It's also just good programming sense.
+
+Beat up your own code! You are the best (and in this case, the only) tester of
+this code. Throw lots of different inputs at it and make sure the shell
+behaves well. Good code comes through testing; you must run many different
+tests to make sure things work as desired. Don't be gentle -- other users
+certainly won't be.
+
+Finally, keep versions of your code. More advanced programmers will use a
+source control system such as git. Minimally, when you get a piece of
+functionality working, make a copy of your .c file (perhaps a subdirectory
+with a version number, such as v1, v2, etc.). By keeping older, working
+versions around, you can comfortably work on adding new functionality, safe in
+the knowledge you can always go back to an older, working version if need be.
+
+## Tests
+
+Available are some tests to see if your code works. The testing framework that is
+currently available is found [here](https://gitlab.imt-atlantique.fr/ue-os/2022/processes-shell/tester).
+A specific testing script (`/test-wish.sh` ), found in the project root directory, can be used to run the tests against your code.
