@@ -2,6 +2,11 @@ Wish Shell – Custom Unix Command-Line Shell
 
 Wish Shell is a lightweight Unix-style command-line interpreter built in C. It supports both interactive and batch execution modes, executing system commands just like a basic shell. This project focuses on process management, command parsing, output redirection, parallel execution, and handling built-in shell commands using Linux system calls.
 
+To compile (git bash) and run Wish Shell:
+
+make && ./wish
+
+
 🚀 Features
 
 Interactive mode (wish>) and batch mode (run commands from a file)
@@ -132,3 +137,4 @@ Building a shell-like CLI environment in C
 📜 License
 
 This project is open-source and available for learning and personal use.
+
